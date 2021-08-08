@@ -3,6 +3,7 @@ const mongoose = require('mongoose');
 const logger = require('morgan');
 const path = require('path');
 const db = require('./models');
+const Workout = require('./models/workout');
 
 const PORT = process.env.PORT || 3000
 
@@ -39,16 +40,20 @@ app.get("/stats", (req, res) => {
 
 //API Routes//
 //Get all workouts
-app.get('/api/workouts', (req, res) => {
-  db.Workout.find({})
-    .sort({ day: 1 })
-    .then(dbWorkout => {
-      res.json(dbWorkout);
+app.get("/api/workouts/", (req,res) =>{
+  Workout.aggregate(
+      [{
+        $addFields : {totalDuration : {$sum: "$exercises.duration"}}
+      }]
+    )
+    .then(data =>{
+      res.json(data);
     })
-    .catch(err => {
-      res.json(dbWorkout);
-    });
+    .catch(err =>{
+      res.status(400).json(err)
+    })
 });
+
 
 //Create a new workout
 app.post('/api/workouts', ({ body }, res) => {
@@ -63,13 +68,18 @@ app.post('/api/workouts', ({ body }, res) => {
 
 //Getting workout data for the dashboard page
 app.get('/api/workouts/range', (req, res) => {
-  db.Workout.find({})
-    .sort({ day: 1 })
-    .then(dbWorkout => {
-      //console.log(dbWorkout);
+  Workout.aggregate(
+    [{
+      $addFields: {
+        totalDuration: {$sum: "$exercises.duration"}}
+      }]
+  )
+  .sort({day : -1})    
+    .limit(5)
+    .then(dbWorkout =>{
       res.json(dbWorkout);
     })
-    .catch(err => {
+    .catch((err) => {
       res.json(err);
     });
 });
@@ -88,7 +98,7 @@ app.put('/api/workouts/:id', (req, res) => {
 });
 
 //Deleting a workout
-app.delete("/api/workouts", (req, res) => {
+app.delete('/api/workouts', (req, res) => {
     db.Workout.findByIdAndDelete(req.body.id)
     .then(() => {
       res.json(true)
