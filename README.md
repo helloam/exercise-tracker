@@ -24,5 +24,5 @@ The user should be able to:
 
   * View the total duration of each workout from the past seven workouts on the `stats` page.
 
-[Deployed App on Heroku](https://glacial-river-87822.herokuapp.com/) (WIP, not complete)
+[Deployed App on Heroku](https://glacial-river-87822.herokuapp.com/)
 
